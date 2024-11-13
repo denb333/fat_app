@@ -19,10 +19,11 @@ class _QuizPageState extends State<QuizPage> {
   void initState() {
     super.initState();
     loadQuestions();
+    print("Received lessonId: ${widget.lessonId}");
   }
 
   void loadQuestions() {
-    if (widget.lessonId == 'lesson_1_1') {
+    if (widget.lessonId == '1') {
       questions = [
         {
           'question': 'Phân thức đại số là gì?',
@@ -81,7 +82,7 @@ class _QuizPageState extends State<QuizPage> {
           'selectedAnswer': -1,
         },
       ];
-    } else if (widget.lessonId == 'lesson_1_2') {
+    } else if (widget.lessonId == '2') {
       questions = [
         {
           'question': 'Khi nhân hai phân thức đại số, ta thực hiện:',

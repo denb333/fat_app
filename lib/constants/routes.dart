@@ -3,8 +3,8 @@ const loginRoutes = '/login';
 const registerRoutes = '/register';
 const notesRoutes = '/notes';
 const emailverifyRoute = '/emailverify';
-
-//page
+const updateinformationRoutes = '/updateinformation';
+//page student
 const coursepage = '/course';
 const studentPage = '/studentpage';
 const tutorPage = '/tutorpage';
@@ -12,12 +12,17 @@ const interactlearningpage = '/interactlearning';
 const classschedulePage = '/classschedule';
 const fatutorpage = '/findatutor';
 const chatpage = '/chat';
-const livestreampage = '/livestream';
 const paymentRoutes = '/payment';
-const updateinformationRoutes = '/updateinformation';
 const listlectureRoutes = '/listlecture';
+
+//page teacher
+const courseteacherpage = '/teachercourse';
+const interactlearninteachergpage = '/teacherinteractlearning';
+const classscheduleteacherpage = '/teacherclassschedule';
+const chatteacherPage = '/teacherchat';
+const livestreampage = '/teacherlivestream';
+const listlectureteacherRoutes = '/listlecture';
 const teacherliverecord = '/teacherliverecord';
 const teacherlive = '/teacherlive';
 const addCourses = '/addCoursesScreen';
-//
-const videoplayer = '/videoplayer';
+const teacherchatpage = '/teacherchat';

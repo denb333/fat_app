@@ -1,4 +1,7 @@
+import 'package:fat_app/Model/UserModel.dart';
 import 'package:fat_app/service/UserService.dart';
+import 'package:fat_app/view/Student/InteractLearningPage.dart';
+import 'package:fat_app/view/Teacher/InteractLearningTeacherPage.dart';
 import 'package:fat_app/view/loading/LoadingView.dart';
 import 'package:fat_app/view_auth/register_view.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -19,7 +22,15 @@ class _LoginPageState extends State<LoginPage> {
   final _formkey = GlobalKey<FormState>();
   final TextEditingController emailController = new TextEditingController();
   final TextEditingController passwordController = new TextEditingController();
-
+  final UserModel usermodel = new UserModel(
+      userName: '',
+      email: '',
+      role: '',
+      userClass: '',
+      position: '',
+      phoneNumber: '',
+      createdCourses: [],
+      profileImage: '');
   final _auth = FirebaseAuth.instance;
 
   @override
@@ -184,14 +195,53 @@ class _LoginPageState extends State<LoginPage> {
                             setState(() {
                               visible = true;
                             });
-                            userService.signIn(_formkey, context,
-                                emailController.text, passwordController.text);
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    LoadingView(duration: 3000),
-                              ),
-                            );
+                            // userService.signIn(_formkey, context,
+                            //     emailController.text, passwordController.text);
+                            // Navigator.of(context).push(
+                            //   MaterialPageRoute(
+                            //     builder: (context) =>
+                            //         LoadingView(duration: 3000),
+                            //   ),
+                            // );
+
+                            // Assuming you already have the service and the method to sign in
+                            userService
+                                .signIn(_formkey, context, emailController.text,
+                                    passwordController.text)
+                                .then((user) {
+                              setState(() {
+                                visible = false;
+                              });
+
+                              print(
+                                  "Login successful. User role: ${user.role}");
+                              String role = user.role;
+                              if (role == 'Teacher') {
+                                // Navigate to the teacher's dashboard or page
+                                Navigator.of(context).pushReplacement(
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        InteractLearningTeacherPage(),
+                                  ),
+                                );
+                              } else if (role == 'Student') {
+                                // Navigate to the student's page
+                                Navigator.of(context).pushReplacement(
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        InteractLearningPage(),
+                                  ),
+                                );
+                              } else {
+                                // Handle invalid role or show an error
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('Invalid role')));
+                              }
+                            }).catchError((e) {
+                              // Handle login failure (e.g., wrong password, email)
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Login failed: $e')));
+                            });
                           },
                           child: Text(
                             "Login",

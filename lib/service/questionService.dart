@@ -1,13 +1,13 @@
 // services/quiz_service.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:fat_app/Model/lessonTile.dart';
+import 'package:fat_app/Model/lesson.dart';
 import 'package:fat_app/Model/question.dart';
 
 class QuizService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   final String questionCollection = 'questions';
-  late final LessonTile lessonTile;
+  late final Lesson lessonTile;
   Future<void> addQuestion(Question question) async {
     try {
       await _firestore
@@ -48,7 +48,7 @@ class QuizService {
     try {
       final querySnapshot = await _firestore
           .collection(questionCollection)
-          .where('lessonId', isEqualTo: lessonTile.lessonId)
+          .where('lessonId', isEqualTo: lessonTile.lesson_ID)
           .where('isActive', isEqualTo: true)
           .where('createdBy', isEqualTo: lessonTile.createdAt)
           .get();

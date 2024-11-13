@@ -149,9 +149,11 @@ class _UpdateInformationPageState extends State<UpdateInformationPage> {
         userClass: _classNameController.text,
         position:
             '$_selectedWard, $_selectedDistrict, Đà Nẵng, ${_addressController.text}',
-        profileImage: imageUrl ?? _currentProfileImageUrl,
+        profileImage: (imageUrl ?? _currentProfileImageUrl) ?? '',
         email: user?.email ?? '',
         role: 'user',
+        phoneNumber: '',
+        createdCourses: [],
       );
 
       String? userId = FirebaseAuth.instance.currentUser?.uid;

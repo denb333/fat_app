@@ -1,46 +1,28 @@
+// lib/services/course_service.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:fat_app/Model/lecture.dart';
+import 'package:fat_app/Model/courses.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
-class LectureService {
-  final CollectionReference _lectureCollection =
-      FirebaseFirestore.instance.collection('Lectures');
+class CourseService {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  Future<bool> checkLectureExists(String lectureId) async {
-    try {
-      DocumentSnapshot snapshot = await _lectureCollection.doc(lectureId).get();
-      return snapshot.exists;
-    } catch (e) {
-      print('Error checking lecture exist: $e');
-      return false;
-    }
-  }
-
-  Future<List<Lecture>> getLectures() async {
-    try {
-      QuerySnapshot snapshot = await _lectureCollection.get();
-      return snapshot.docs
-          .map((doc) => Lecture.fromMap(doc.data() as Map<String, dynamic>))
-          .toList();
-    } catch (e) {
-      print('Error fetching lectures: $e');
-      throw e;
-    }
-  }
-
-  Future<void> updateLecture(String lectureId, Lecture lecture) async {
-    try {
-      final lectureData = lecture.toMap();
-      if (lectureData != null) {
-        await _lectureCollection.doc(lectureId).update(lectureData);
-        print('Chapter Name: ${lecture.chaptername}');
-        print('Lecture Name:${lecture.lecturename}');
-        print('Lecture Description: ${lecture.description}');
-        print('Lecture Date: ${lecture.date}');
-      } else {
-        print('Error: Lecture data is null');
+  Future<void> saveCourse(Course course) async {
+    User? user = _auth.currentUser;
+    if (user != null) {
+      try {
+        // Create a new course ID
+        String courseId = _firestore.collection('Courses').doc().id;
+        // Save the course data to Firestore
+        await _firestore
+            .collection('Courses')
+            .doc(courseId)
+            .set(course.toJson());
+      } catch (e) {
+        throw Exception('Failed to add course: $e');
       }
-    } catch (e) {
-      print('Error updating lecture: $e');
+    } else {
+      throw Exception('No authenticated user found');
     }
   }
 }

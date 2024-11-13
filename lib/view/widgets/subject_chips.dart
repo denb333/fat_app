@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 class SubjectChipsWidget extends StatelessWidget {
   final List<String> subjects;
 
-  const SubjectChipsWidget({Key? key, required this.subjects})
+  const SubjectChipsWidget(
+      {Key? key, required this.subjects, String? selectedSubject})
       : super(key: key);
 
   @override

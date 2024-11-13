@@ -5,24 +5,29 @@ class UserModel {
   final String userClass;
   final String position;
   final String? profileImage;
+  final String phoneNumber;
+  final List<String> createdCourses;
 
-  UserModel({
-    required this.userName,
-    required this.email,
-    required this.role,
-    required this.userClass,
-    required this.position,
-    this.profileImage,
-  });
+  UserModel(
+      {required this.userName,
+      required this.email,
+      required this.role,
+      required this.userClass,
+      required this.position,
+      this.profileImage,
+      required this.phoneNumber,
+      required this.createdCourses});
 
   Map<String, dynamic> toMap() {
     return {
       'username': userName,
       'email': email,
-      'role': role,
+      'rool': role,
       'class': userClass,
       'position': position,
       'profileImage': profileImage,
+      'phoneNumber': phoneNumber,
+      'createdCourses': createdCourses,
     };
   }
 
@@ -30,15 +35,17 @@ class UserModel {
     return UserModel(
       userName: map['username'] ?? '',
       email: map['email'] ?? '',
-      role: map['role'] ?? '',
+      role: map['rool'] ?? '',
       userClass: map['class'] ?? '',
       position: map['position'] ?? '',
       profileImage: map['profileImage'],
+      phoneNumber: map['phoneNumber'] ?? '',
+      createdCourses: List<String>.from(map['createdCourses'] ?? []),
     );
   }
 
   @override
   String toString() {
-    return 'User{username: $userName, email: $email, role: $role, class: $userClass, position: $position}';
+    return 'User{username: $userName, email: $email, rool: $role, class: $userClass, position: $position , profileImage: $profileImage, phoneNumber: $phoneNumber}';
   }
 }

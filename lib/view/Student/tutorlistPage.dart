@@ -46,7 +46,6 @@ class _TutorListPageState extends State<TutorListPage> {
     try {
       QuerySnapshot queryResult;
 
-      // Áp dụng filter nếu không phải 'All'
       if (selectedFilter != 'All') {
         queryResult = await FirebaseFirestore.instance
             .collection('Courses')
@@ -449,7 +448,7 @@ class _TutorListPageState extends State<TutorListPage> {
                     ),
                     _buildInfoItem(
                       Icons.access_time,
-                      '${course.startTime} - ${course.endTime}',
+                      '${course.startDate} - ${course.endDate}',
                       'Time',
                     ),
                     _buildInfoItem(

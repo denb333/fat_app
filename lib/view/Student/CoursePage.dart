@@ -1,4 +1,5 @@
-import 'package:fat_app/view/Teacher/addCoursesScreen.dart';
+import 'package:fat_app/Model/courses.dart';
+import 'package:fat_app/view/Student/listlecturePage.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -7,12 +8,9 @@ import 'package:fat_app/view/widgets/subject_chips.dart';
 import 'package:fat_app/view/widgets/custom_app_bar.dart';
 import 'package:fat_app/view/widgets/custom_bottom_navigation_bar.dart';
 
-import '../Model/courses.dart';
-
-// Import AddCoursesScreen
-
 class CoursePage extends StatefulWidget {
-  const CoursePage({Key? key}) : super(key: key);
+  const CoursePage({Key? key, required this.course}) : super(key: key);
+  final Course course;
 
   @override
   _CoursePage createState() => _CoursePage();
@@ -96,7 +94,6 @@ class _CoursePage extends State<CoursePage> {
       ),
       body: Column(
         children: [
-          // Search bar and subject chips
           Container(
             color: Colors.green.shade50,
             padding: const EdgeInsets.all(16.0),
@@ -104,18 +101,19 @@ class _CoursePage extends State<CoursePage> {
               children: [
                 SearchBarWidget(
                   onSearch: (query) {
-                    // Handle search logic
                     print("Search query: $query");
                   },
                 ),
                 const SizedBox(height: 12.0),
-                SubjectChipsWidget(subjects: [
-                  'Chemistry',
-                  'Physics',
-                  'Math',
-                  'Geography',
-                  'History',
-                ]),
+                SubjectChipsWidget(
+                  subjects: const [
+                    'Chemistry',
+                    'Physics',
+                    'Math',
+                    'Geography',
+                    'History',
+                  ],
+                ),
               ],
             ),
           ),
@@ -131,37 +129,29 @@ class _CoursePage extends State<CoursePage> {
               ),
             ),
           ),
-          // Expanded(
-          //   child: GridView.count(
-          //     crossAxisCount: 2,
-          //     padding: const EdgeInsets.all(16.0),
-          //     crossAxisSpacing: 16.0,
-          //     mainAxisSpacing: 16.0,
-          //     childAspectRatio: 0.7,
-          //     children: courses.map((course) {
-          //       bool isRegistered = registeredCourses.contains(course.id);
-          //       return _buildClassCard(
-          //           course.subject,
-          //           course.teacher,
-          //           '${course.startDate} - ${course.endDate}',
-          //           course.price,
-          //           course.description,
-          //           isRegistered,
-          //           course.id);
-          //     }).toList(),
-          //   ),
-          // ),
+          Expanded(
+            child: GridView.count(
+              crossAxisCount: 2,
+              padding: const EdgeInsets.all(16.0),
+              crossAxisSpacing: 16.0,
+              mainAxisSpacing: 16.0,
+              childAspectRatio: 0.7,
+              children: courses.map((course) {
+                bool isRegistered = registeredCourses.contains(course.id);
+                return _buildClassCard(
+                  course.subject,
+                  course.teacher,
+                  '${course.startDate} - ${course.endDate}',
+                  course.price,
+                  course.description,
+                  isRegistered,
+                  course.id,
+                  course, // Passing the course to the method
+                );
+              }).toList(),
+            ),
+          ),
         ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Navigate to AddCoursesScreen page
-          Navigator.of(context).push(
-            MaterialPageRoute(builder: (context) => AddCoursesScreen()),
-          );
-        },
-        backgroundColor: Colors.blue,
-        child: Icon(Icons.add),
       ),
       bottomNavigationBar: CustomBottomNavigationBar(
         currentIndex: 2,
@@ -195,7 +185,8 @@ class _CoursePage extends State<CoursePage> {
     double price,
     String description,
     bool isRegistered,
-    String courseId,
+    String creatorId,
+    Course course, // Passing the full course object
   ) {
     return Card(
       elevation: 4,
@@ -217,7 +208,6 @@ class _CoursePage extends State<CoursePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Header section with subject and teacher
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
@@ -265,15 +255,12 @@ class _CoursePage extends State<CoursePage> {
                 ],
               ),
             ),
-
-            // Content section
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.all(12),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Time section
                     Row(
                       children: [
                         const Icon(
@@ -296,8 +283,6 @@ class _CoursePage extends State<CoursePage> {
                       ],
                     ),
                     const SizedBox(height: 8),
-
-                    // Description section
                     Expanded(
                       child: Text(
                         description,
@@ -309,18 +294,23 @@ class _CoursePage extends State<CoursePage> {
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-
-                    // Action button
                     const SizedBox(height: 8),
                     SizedBox(
                       width: double.infinity,
                       child: isRegistered
                           ? ElevatedButton.icon(
                               onPressed: () {
-                                Navigator.of(context)
-                                    .pushNamed('/listlecture', arguments: {
-                                  'courseId': courseId,
-                                });
+                                print('course.chapterId: ${course.chapterId}');
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (context) => LectureListScreen(
+                                      chapterId: course.chapterId
+                                          .map(int.parse)
+                                          .toList(),
+                                      course: course,
+                                    ),
+                                  ),
+                                );
                               },
                               icon: const Icon(Icons.play_circle_outline),
                               label: const Text('Join Course'),
@@ -337,7 +327,11 @@ class _CoursePage extends State<CoursePage> {
                           : ElevatedButton.icon(
                               onPressed: () {
                                 _showConfirmationDialog(
-                                    context, price, courseId, subject);
+                                  context,
+                                  price,
+                                  creatorId,
+                                  subject,
+                                );
                               },
                               icon: const Icon(Icons.shopping_cart),
                               label:
@@ -364,34 +358,43 @@ class _CoursePage extends State<CoursePage> {
   }
 
   void _showConfirmationDialog(
-      BuildContext context, double price, String courseId, subject) {
+    BuildContext context,
+    double price,
+    String creatorId,
+    String subject,
+  ) {
     showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text('Confirm Purchase'),
-            content: Text("Bạn xác nhận mua khóa học với giá \$$price?"),
-            actions: <Widget>[
-              TextButton(
-                  child: Text("Không"),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  }),
-              TextButton(
-                child: Text('Có'),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                  _registerCourse(courseId);
-                  Navigator.of(context).pushNamed('/payment', arguments: {
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Confirm Purchase'),
+          content: Text('Bạn xác nhận mua khóa học với giá \$$price?'),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Không'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('Có'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                _registerCourse(creatorId);
+                Navigator.of(context).pushNamed(
+                  '/payment',
+                  arguments: {
                     'price': price,
-                    'courseId': courseId,
+                    'courseId': creatorId,
                     'subject': subject,
                     'username': username,
-                  });
-                },
-              ),
-            ],
-          );
-        });
+                  },
+                );
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 }

@@ -1,4 +1,7 @@
+// lib/screens/add_courses_screen.dart
+import 'package:fat_app/service/coursesService.dart';
 import 'package:flutter/material.dart';
+import 'package:fat_app/Model/courses.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -18,9 +21,9 @@ class _AddCoursesScreenState extends State<AddCoursesScreen> {
   final TextEditingController _priceController = TextEditingController();
   final TextEditingController _subjectController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseAuth _auth = FirebaseAuth.instance;
 
+  final CourseService _courseService = CourseService();
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   @override
   void dispose() {
     _teacherController.dispose();
@@ -46,29 +49,42 @@ class _AddCoursesScreenState extends State<AddCoursesScreen> {
     }
   }
 
+  Future<int> _getId() async {
+    QuerySnapshot querySnapshot = await _firestore
+        .collection('Courses')
+        .orderBy('id', descending: true)
+        .limit(1)
+        .get();
+    if (querySnapshot.docs.isNotEmpty) {
+      return 1;
+    }
+
+    int currentID = querySnapshot.docs.first.get('id') as int;
+    return currentID + 1;
+  }
+
   Future<void> _saveCourse() async {
     if (_formKey.currentState!.validate()) {
-      User? user = _auth.currentUser; // Get the current authenticated user
+      User? user = FirebaseAuth.instance.currentUser;
       if (user != null) {
-        // Generate a unique ID for the course
-        String courseId = _firestore.collection('Courses').doc().id;
+        // Create a Course object
+        int nextid = await _getId();
+        Course course = Course(
+          id: nextid.toString(),
+          teacher: _teacherController.text,
+          startDate: _startDateController.text,
+          endDate: _endDateController.text,
+          price: double.parse(_priceController.text),
+          subject: _subjectController.text,
+          description: _descriptionController.text,
+          creatorId: user.uid,
+          createdAt: FieldValue.serverTimestamp() as Timestamp,
+          chapterId: [],
+        );
 
         try {
-          // Save course data to Firestore
-          await _firestore.collection('Courses').doc(courseId).set({
-            // 'id': courseId, // Unique course ID
-            'teacher': _teacherController.text, // Teacher's name
-            'startDate':
-                _startDateController.text, // Start date (from the controller)
-            'endDate':
-                _endDateController.text, // End date (from the controller)
-            'price': double.parse(_priceController.text), // Price of the course
-            'subject': _subjectController.text, // Subject name
-            'description': _descriptionController.text, // Course description
-            'creatorId': user.uid, // ID of the user who created the course
-            'createdAt': FieldValue
-                .serverTimestamp(), // Timestamp of when the course was created
-          });
+          // Save course data using CourseService
+          await _courseService.saveCourse(course);
 
           // Show success message and navigate back to previous screen
           ScaffoldMessenger.of(context).showSnackBar(

@@ -1,9 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../Model/UserModel.dart';
-import '../main.dart';
 import '../view_auth/login_view.dart';
 
 class UserService {
@@ -71,25 +69,64 @@ class UserService {
   //   }
   // }
 
-  Future<void> signIn(GlobalKey<FormState> formKey, BuildContext context,
+  // Future<void> signIn(GlobalKey<FormState> formKey, BuildContext context,
+  //     String email, String password) async {
+  //   if (formKey.currentState!.validate()) {
+  //     try {
+  //       UserCredential userCredential =
+  //           await FirebaseAuth.instance.signInWithEmailAndPassword(
+  //         email: email,
+  //         password: password,
+  //       );
+  //       Navigator.of(context).pushNamed('/interactlearning');
+  //     } on FirebaseAuthException catch (e) {
+  //       if (e.code == 'user-not-found') {
+  //         print('No user found for that email.');
+  //       } else if (e.code == 'wrong-password') {
+  //         print('Wrong password provided for that user.');
+  //       }
+  //     } catch (e) {
+  //       print('Error during sign-in: $e');
+  //     }
+  //   }
+  // }
+
+  Future<UserModel> signIn(GlobalKey<FormState> formKey, BuildContext context,
       String email, String password) async {
     if (formKey.currentState!.validate()) {
       try {
-        UserCredential userCredential =
-            await FirebaseAuth.instance.signInWithEmailAndPassword(
-          email: email,
-          password: password,
-        );
-        Navigator.of(context).pushNamed('/interactlearning');
+        // Sign in with Firebase Auth
+        UserCredential userCredential = await FirebaseAuth.instance
+            .signInWithEmailAndPassword(email: email, password: password);
+
+        // Fetch user data from Firestore
+        DocumentSnapshot userData = await FirebaseFirestore.instance
+            .collection('Users')
+            .doc(userCredential.user!.uid)
+            .get();
+
+        if (!userData.exists) {
+          throw Exception("User data not found in database");
+        }
+
+        // Convert to UserModel and return
+        UserModel user =
+            UserModel.fromMap(userData.data() as Map<String, dynamic>);
+        print("Fetched user data: $user"); // Debug print
+        return user;
       } on FirebaseAuthException catch (e) {
         if (e.code == 'user-not-found') {
-          print('No user found for that email.');
+          throw 'No user found for that email.';
         } else if (e.code == 'wrong-password') {
-          print('Wrong password provided for that user.');
+          throw 'Wrong password provided.';
+        } else {
+          throw e.message ?? 'Authentication failed';
         }
       } catch (e) {
-        print('Error during sign-in: $e');
+        throw e.toString();
       }
+    } else {
+      throw Exception("Form validation failed");
     }
   }
 
